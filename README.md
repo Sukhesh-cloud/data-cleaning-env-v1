@@ -69,12 +69,12 @@ docker build -t data-cleaning-env:latest .
 # ☁️ Deploy to Hugging Face
 
 ```bash
-openenv push --repo-id Sukhesh029/data-cleaning-env
+openenv push --repo-id username/data-cleaning-env
 ```
 
 After deployment:
 
-👉 https://huggingface.co/spaces/Sukhesh029/data-cleaning-env
+👉 https://huggingface.co/spaces/username/data-cleaning-env
 
 ---
 
