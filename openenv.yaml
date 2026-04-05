@@ -1,0 +1,42 @@
+name: data_cleaning_env
+
+description: >
+  An RL environment where agents learn data cleaning strategies 
+  such as handling missing values, outliers, and skewness.
+
+entrypoint: server.app:app
+
+tasks:
+  - easy
+  - medium
+  - hard
+
+observation_space:
+  type: object
+  properties:
+    num_rows: integer
+    num_columns: integer
+    missing_ratio: number
+    outlier_ratio: number
+    skewness:
+      type: array
+      items: number
+    data_types:
+      type: array
+      items: string
+    steps_remaining: integer
+
+action_space:
+  type: object
+  properties:
+    action_type: string
+    reason: string
+    confidence: number
+
+spec_version: 1
+name: data_cleaning_env
+type: space
+runtime: fastapi
+app: server.app:app
+port: 8000
+
