@@ -11,7 +11,6 @@ class Observation(BaseModel):
     data_types: List[str]
     steps_remaining: int
 
-    # 🔥 REQUIRED BY OPENENV
     reward: float = 0.0
     done: bool = False
     metadata: Optional[Dict[str, Any]] = None

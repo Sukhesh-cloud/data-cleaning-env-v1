@@ -7,9 +7,8 @@ def get_easy_dataset():
 
 
 def grade_easy(env):
-    score = 0
+    obs = env.last_observation   
+    missing = obs.missing_ratio
 
-    if env.dataset["missing_ratio"] < 0.1:
-        score += 1.0
-
-    return score
+    score = max(0, (0.3 - missing)) * 3
+    return round(min(1.0, score), 2)
