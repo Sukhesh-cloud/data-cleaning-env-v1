@@ -1,3 +1,12 @@
+---
+title: Data Cleaning RL Environment Server
+emoji: 🧠
+colorFrom: blue
+colorTo: purple
+sdk: docker
+...
+---
+
 # 🧠 Data Cleaning RL Environment
 
 A real-world OpenEnv environment that simulates **data cleaning workflows** as a sequential decision-making problem.
