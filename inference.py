@@ -11,7 +11,7 @@ ENV_NAME = "data_cleaning_env"
 
 API_BASE_URL = os.getenv("API_BASE_URL")
 API_KEY = os.getenv("API_KEY") or os.getenv("HF_TOKEN")
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
+MODEL_NAME = os.getenv("MODEL_NAME")
 
 MAX_STEPS = 5
 
