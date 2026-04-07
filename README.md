@@ -1,255 +1,214 @@
----
-title: Data Cleaning Env Environment Server
-emoji: 🚀
-colorFrom: gray
-colorTo: pink
-sdk: docker
-pinned: false
-app_port: 8000
-base_path: /web
-tags:
-  - openenv
+# 🧠 Data Cleaning RL Environment
+
+A real-world OpenEnv environment that simulates **data cleaning workflows** as a sequential decision-making problem.
+Designed for training and evaluating AI agents on tasks like handling missing values, removing outliers, and normalizing data.
+
 ---
 
-# Data Cleaning Env Environment
-
-A simple test environment that echoes back messages. Perfect for testing the env APIs as well as demonstrating environment usage patterns.
-
-## Quick Start
-
-The simplest way to use the Data Cleaning Env environment is through the `DataCleaningEnv` class:
+# 🚀 Quick Start
 
 ```python
-from data_cleaning_env import DataCleaningAction, DataCleaningEnv
+from data_cleaning_env import Action, DataCleaningEnv
 
 try:
-    # Create environment from Docker image
-    data_cleaning_envenv = DataCleaningEnv.from_docker_image("data_cleaning_env-env:latest")
+    # Start environment from Docker
+    env = DataCleaningEnv.from_docker_image("data-cleaning-env:latest")
 
-    # Reset
-    result = data_cleaning_envenv.reset()
-    print(f"Reset: {result.observation.echoed_message}")
+    # Reset environment
+    result = env.reset()
+    obs = result.observation
+    print("Initial missing ratio:", obs.missing_ratio)
 
-    # Send multiple messages
-    messages = ["Hello, World!", "Testing echo", "Final message"]
+    # Take actions
+    actions = [
+        Action(action_type="fill_missing_mean", reason="Handle missing", confidence=0.9),
+        Action(action_type="remove_outliers", reason="Clean anomalies", confidence=0.9),
+        Action(action_type="normalize_data", reason="Reduce skewness", confidence=0.8),
+    ]
 
-    for msg in messages:
-        result = data_cleaning_envenv.step(DataCleaningAction(message=msg))
-        print(f"Sent: '{msg}'")
-        print(f"  → Echoed: '{result.observation.echoed_message}'")
-        print(f"  → Length: {result.observation.message_length}")
-        print(f"  → Reward: {result.reward}")
+    for action in actions:
+        result = env.step(action)
+        obs = result.observation
+
+        print("Action:", action.action_type)
+        print("Reward:", obs.reward)
+        print("Remaining steps:", obs.steps_remaining)
 
 finally:
-    # Always clean up
-    data_cleaning_envenv.close()
+    env.close()
 ```
 
-That's it! The `DataCleaningEnv.from_docker_image()` method handles:
-- Starting the Docker container
-- Waiting for the server to be ready
-- Connecting to the environment
-- Container cleanup when you call `close()`
+---
 
-## Building the Docker Image
-
-Before using the environment, you need to build the Docker image:
+# 🐳 Build Docker Image
 
 ```bash
-# From project root
-docker build -t data_cleaning_env-env:latest -f server/Dockerfile .
+docker build -t data-cleaning-env:latest .
 ```
 
-## Deploying to Hugging Face Spaces
+---
 
-You can easily deploy your OpenEnv environment to Hugging Face Spaces using the `openenv push` command:
+# ☁️ Deploy to Hugging Face
 
 ```bash
-# From the environment directory (where openenv.yaml is located)
-openenv push
-
-# Or specify options
-openenv push --namespace my-org --private
+openenv push --repo-id username/data-cleaning-env
 ```
 
-The `openenv push` command will:
-1. Validate that the directory is an OpenEnv environment (checks for `openenv.yaml`)
-2. Prepare a custom build for Hugging Face Docker space (enables web interface)
-3. Upload to Hugging Face (ensuring you're logged in)
+After deployment:
 
-### Prerequisites
+👉 https://huggingface.co/spaces/username/data-cleaning-env
 
-- Authenticate with Hugging Face: The command will prompt for login if not already authenticated
+---
 
-### Options
+# 🧠 Environment Overview
 
-- `--directory`, `-d`: Directory containing the OpenEnv environment (defaults to current directory)
-- `--repo-id`, `-r`: Repository ID in format 'username/repo-name' (defaults to 'username/env-name' from openenv.yaml)
-- `--base-image`, `-b`: Base Docker image to use (overrides Dockerfile FROM)
-- `--private`: Deploy the space as private (default: public)
+This environment models **data preprocessing as an RL problem**:
 
-### Examples
-
-```bash
-# Push to your personal namespace (defaults to username/env-name from openenv.yaml)
-openenv push
-
-# Push to a specific repository
-openenv push --repo-id my-org/my-env
-
-# Push with a custom base image
-openenv push --base-image ghcr.io/meta-pytorch/openenv-base:latest
-
-# Push as a private space
-openenv push --private
-
-# Combine options
-openenv push --repo-id my-org/my-env --base-image custom-base:latest --private
+```text
+Observation → Action → Dataset Update → Reward → Next Observation
 ```
 
-After deployment, your space will be available at:
-`https://huggingface.co/spaces/<repo-id>`
+---
 
-The deployed space includes:
-- **Web Interface** at `/web` - Interactive UI for exploring the environment
-- **API Documentation** at `/docs` - Full OpenAPI/Swagger interface
-- **Health Check** at `/health` - Container health monitoring
-- **WebSocket** at `/ws` - Persistent session endpoint for low-latency interactions
+# 🎯 Tasks
 
-## Environment Details
+### 🟢 Easy
 
-### Action
-**DataCleaningAction**: Contains a single field
-- `message` (str) - The message to echo back
+* Focus: Missing value handling
 
-### Observation
-**DataCleaningObservation**: Contains the echo response and metadata
-- `echoed_message` (str) - The message echoed back
-- `message_length` (int) - Length of the message
-- `reward` (float) - Reward based on message length (length × 0.1)
-- `done` (bool) - Always False for echo environment
-- `metadata` (dict) - Additional info like step count
+### 🟡 Medium
 
-### Reward
-The reward is calculated as: `message_length × 0.1`
-- "Hi" → reward: 0.2
-- "Hello, World!" → reward: 1.3
-- Empty message → reward: 0.0
+* Missing values + Outliers
 
-## Advanced Usage
+### 🔴 Hard
 
-### Connecting to an Existing Server
+* Full pipeline (missing + outliers + skewness)
 
-If you already have a Data Cleaning Env environment server running, you can connect directly:
+---
 
-```python
-from data_cleaning_env import DataCleaningEnv
+# 🎮 Action Space
 
-# Connect to existing server
-data_cleaning_envenv = DataCleaningEnv(base_url="<ENV_HTTP_URL_HERE>")
+Each action includes:
 
-# Use as normal
-result = data_cleaning_envenv.reset()
-result = data_cleaning_envenv.step(DataCleaningAction(message="Hello!"))
+* `action_type`
+* `reason`
+* `confidence`
+
+### Supported Actions
+
+* `fill_missing_mean`
+* `remove_outliers`
+* `normalize_data`
+* `do_nothing`
+
+---
+
+# 📊 Observation Space
+
+The agent observes:
+
+* `num_rows`
+* `num_columns`
+* `missing_ratio`
+* `outlier_ratio`
+* `skewness`
+* `data_types`
+* `steps_remaining`
+* `reward`
+* `done`
+
+---
+
+# 🏆 Reward Function
+
+The environment provides **step-wise feedback**:
+
+* Positive reward → improves data quality
+* Negative reward → redundant or ineffective actions
+* Penalizes repeated or low-confidence actions
+
+---
+
+# 🧪 Example Output
+
+```text
+[START] task=easy env=data_cleaning_env model=baseline
+[STEP] step=1 action=fill_missing_mean reward=0.30 done=false
+[STEP] step=2 action=normalize_data reward=0.20 done=false
+...
+[END] success=true steps=5 rewards=...
 ```
 
-Note: When connecting to an existing server, `data_cleaning_envenv.close()` will NOT stop the server.
+---
 
-### Using the Context Manager
+# 🔍 API Endpoints
 
-The client supports context manager usage for automatic connection management:
+| Endpoint | Description            |
+| -------- | ---------------------- |
+| `/reset` | Initialize environment |
+| `/step`  | Apply action           |
+| `/state` | Get current state      |
+| `/docs`  | Swagger API            |
 
-```python
-from data_cleaning_env import DataCleaningAction, DataCleaningEnv
+---
 
-# Connect with context manager (auto-connects and closes)
-with DataCleaningEnv(base_url="http://localhost:8000") as env:
-    result = env.reset()
-    print(f"Reset: {result.observation.echoed_message}")
-    # Multiple steps with low latency
-    for msg in ["Hello", "World", "!"]:
-        result = env.step(DataCleaningAction(message=msg))
-        print(f"Echoed: {result.observation.echoed_message}")
-```
-
-The client uses WebSocket connections for:
-- **Lower latency**: No HTTP connection overhead per request
-- **Persistent session**: Server maintains your environment state
-- **Efficient for episodes**: Better for many sequential steps
-
-### Concurrent WebSocket Sessions
-
-The server supports multiple concurrent WebSocket connections. To enable this,
-modify `server/app.py` to use factory mode:
-
-```python
-# In server/app.py - use factory mode for concurrent sessions
-app = create_app(
-    DataCleaningEnvironment,  # Pass class, not instance
-    DataCleaningAction,
-    DataCleaningObservation,
-    max_concurrent_envs=4,  # Allow 4 concurrent sessions
-)
-```
-
-Then multiple clients can connect simultaneously:
-
-```python
-from data_cleaning_env import DataCleaningAction, DataCleaningEnv
-from concurrent.futures import ThreadPoolExecutor
-
-def run_episode(client_id: int):
-    with DataCleaningEnv(base_url="http://localhost:8000") as env:
-        result = env.reset()
-        for i in range(10):
-            result = env.step(DataCleaningAction(message=f"Client {client_id}, step {i}"))
-        return client_id, result.observation.message_length
-
-# Run 4 episodes concurrently
-with ThreadPoolExecutor(max_workers=4) as executor:
-    results = list(executor.map(run_episode, range(4)))
-```
-
-## Development & Testing
-
-### Direct Environment Testing
-
-Test the environment logic directly without starting the HTTP server:
-
-```bash
-# From the server directory
-python3 server/data_cleaning_env_environment.py
-```
-
-This verifies that:
-- Environment resets correctly
-- Step executes actions properly
-- State tracking works
-- Rewards are calculated correctly
-
-### Running Locally
-
-Run the server locally for development:
+# ⚙️ Running Locally
 
 ```bash
 uvicorn server.app:app --reload
 ```
 
-## Project Structure
+Open:
+👉 http://localhost:8000/docs
+
+---
+
+# 🧪 Testing Environment
+
+```bash
+python inference.py
+```
+
+This runs a baseline agent and outputs:
+
+* Step-by-step actions
+* Rewards
+* Final score
+
+---
+
+# 📁 Project Structure
 
 ```
 data_cleaning_env/
-├── .dockerignore         # Docker build exclusions
-├── __init__.py            # Module exports
-├── README.md              # This file
-├── openenv.yaml           # OpenEnv manifest
-├── pyproject.toml         # Project metadata and dependencies
-├── uv.lock                # Locked dependencies (generated)
-├── client.py              # DataCleaningEnv client
-├── models.py              # Action and Observation models
-└── server/
-    ├── __init__.py        # Server module exports
-    ├── data_cleaning_env_environment.py  # Core environment logic
-    ├── app.py             # FastAPI application (HTTP + WebSocket endpoints)
-    └── Dockerfile         # Container image definition
+├── models.py
+├── inference.py
+├── grader.py
+├── tasks/
+│   ├── easy.py
+│   ├── medium.py
+│   └── hard.py
+├── server/
+│   ├── app.py
+│   ├── data_cleaning_env_environment.py
+│   └── Dockerfile
+├── openenv.yaml
+└── README.md
 ```
+
+---
+
+# 🌍 Use Cases
+
+* Automated data preprocessing
+* RL-based pipeline optimization
+* Decision-making systems
+* AI agents for data quality improvement
+
+---
+
+# 🏁 Summary
+
+This project demonstrates how **real-world workflows can be modeled as RL environments**, enabling intelligent systems to learn optimal strategies for data cleaning.
+
+---
