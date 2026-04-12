@@ -189,10 +189,12 @@ The inference script produces structured logs:
 
 ```
 [START] task=easy env=data_cleaning_env model=Qwen/Qwen2.5-72B-Instruct
-[STEP] step=1 action=fill_missing_mean reward=0.28 done=false error=null
-[STEP] step=2 action=remove_outliers reward=0.15 done=false error=null
-[STEP] step=3 action=normalize_data reward=0.12 done=false error=null
-[END] success=true steps=3 score=0.92 rewards=0.28,0.15,0.12
+[STEP] step=1 action=fill_missing_median reward=-0.13 done=false error=null
+[STEP] step=2 action=normalize_data reward=-0.25 done=false error=null
+[STEP] step=3 action=standardize_data reward=-0.27 done=false error=null
+[STEP] step=4 action=do_nothing reward=-0.25 done=false error=null
+[STEP] step=5 action=fill_missing_mean reward=-0.12 done=true error=null
+[END] success=true steps=5 score=0.510 rewards=-0.13,-0.25,-0.27,-0.25,-0.12
 ```
 
 **Format Specification:**
