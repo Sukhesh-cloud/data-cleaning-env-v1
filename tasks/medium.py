@@ -7,13 +7,20 @@ def get_medium_dataset():
 
 
 def grade_medium(env):
-    obs = env.last_observation
+    """Grade medium task: Improve missing values and outliers."""
+    try:
+        obs = env.last_observation
+        if not obs:
+            return 0.0
+        
+        missing = float(obs.missing_ratio)
+        outliers = float(obs.outlier_ratio)
 
-    missing = obs.missing_ratio
-    outliers = obs.outlier_ratio
+        score = 0.0
+        score += max(0.0, (0.3 - missing)) * 1.5
+        score += max(0.0, (0.2 - outliers)) * 2.0
 
-    score = 0
-    score += max(0, (0.3 - missing)) * 1.5
-    score += max(0, (0.2 - outliers)) * 2
-
-    return round(min(1.0, score), 2)
+        return round(min(1.0, score), 2)
+    except Exception as e:
+        print(f"[DEBUG] grade_medium error: {e}")
+        return 0.0
