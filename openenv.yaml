@@ -36,7 +36,7 @@ action_space:
 spec_version: 1
 name: data_cleaning_env
 type: space
-runtime: fastapi
+runtime: docker
 app: server.app:app
-port: 8000
+port: 7860
 

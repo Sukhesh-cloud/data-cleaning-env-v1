@@ -7,4 +7,4 @@ COPY . .
 RUN pip install --upgrade pip
 RUN pip install -r server/requirements.txt
 
-CMD ["python", "-m", "server.app"]
+CMD ["sh", "-c", "uvicorn server.app:app --host 0.0.0.0 --port ${PORT:-7860}"]
