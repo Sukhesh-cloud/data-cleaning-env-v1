@@ -24,6 +24,7 @@ TEMPERATURE = 0.2
 MAX_TOKENS = 150
 CONNECTION_TIMEOUT = 30
 CONNECTION_RETRIES = 3
+PORTS_TO_TRY = [7860, 8000]  # 7860=HF Spaces, 8000=Local dev
 
 
 # ===== LOGGING FUNCTIONS =====
@@ -73,26 +74,32 @@ async def get_environment(timeout: int = CONNECTION_TIMEOUT) -> Optional[DataCle
         except Exception as e:
             debug_log(f"Docker strategy failed: {e}")
     
-    # Strategy 2: Local Server with Retries
+    # Strategy 2: Local Server with Retries (try multiple ports)
+    ports_to_try = [7860, 8000]  # HF Spaces (7860), Local dev (8000)
+    
     try:
-        debug_log("Attempting to connect to local server at http://localhost:8000")
-        for attempt in range(CONNECTION_RETRIES):
-            try:
-                env = DataCleaningEnv(base_url="http://localhost:8000")
-                # Test connection with a simple reset
-                test_result = await asyncio.wait_for(
-                    env.reset(task="easy"),
-                    timeout=10
-                )
-                debug_log(f"Successfully connected to local server on attempt {attempt + 1}")
-                # Reset again to get clean state
-                await env.reset(task="easy")
-                return env
-            except (asyncio.TimeoutError, ConnectionError) as e:
-                wait_time = 2 ** attempt  # Exponential backoff
-                debug_log(f"Attempt {attempt + 1}/{CONNECTION_RETRIES} failed: {e}. Retrying in {wait_time}s...")
-                if attempt < CONNECTION_RETRIES - 1:
-                    await asyncio.sleep(wait_time)
+        for port in ports_to_try:
+            debug_log(f"Attempting to connect to local server at http://localhost:{port}")
+            for attempt in range(CONNECTION_RETRIES):
+                try:
+                    env = DataCleaningEnv(base_url=f"http://localhost:{port}")
+                    # Test connection with a simple reset
+                    test_result = await asyncio.wait_for(
+                        env.reset(task="easy"),
+                        timeout=10
+                    )
+                    debug_log(f"Successfully connected to local server on port {port} (attempt {attempt + 1})")
+                    # Reset again to get clean state
+                    await env.reset(task="easy")
+                    return env
+                except (asyncio.TimeoutError, ConnectionError) as e:
+                    wait_time = 2 ** attempt  # Exponential backoff
+                    debug_log(f"Port {port} attempt {attempt + 1}/{CONNECTION_RETRIES} failed: {e}. Retrying in {wait_time}s...")
+                    if attempt < CONNECTION_RETRIES - 1:
+                        await asyncio.sleep(wait_time)
+                except Exception as e:
+                    debug_log(f"Port {port} connection error: {e}")
+                    break  # Move to next port
     except Exception as e:
         debug_log(f"Local connection strategy failed: {e}")
     
