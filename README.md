@@ -1,6 +1,6 @@
 ---
 title: Data Cleaning RL Environment
-emoji: brain
+emoji: 🤖
 colorFrom: blue
 colorTo: purple
 sdk: docker
