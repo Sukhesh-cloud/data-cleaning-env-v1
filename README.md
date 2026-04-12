@@ -320,15 +320,6 @@ Expected output:
          └──────────────────┘
 ```
 
-## Performance Benchmarks
-
-Example results from baseline LLM agent:
-
-| Task   | Avg Score | Steps | Final Missing | Final Outliers |
-|--------|-----------|-------|---------------|----------------|
-| Easy   | 0.92      | 4     | 0.02          | 0.00           |
-| Medium | 0.78      | 5     | 0.05          | 0.08           |
-| Hard   | 0.65      | 5     | 0.12          | 0.15           |
 
 ## Contributing
 
@@ -339,9 +330,6 @@ To extend this environment:
 3. Implement grading function matching `grade_*` pattern
 4. Update `grader.py` to include new task
 
-## License
-
-BSD-style license
 
 ## References
 
